@@ -19,10 +19,18 @@ export function useNow(everyMs = 15000) {
   return { now, date, nowMin, dayStartEpoch };
 }
 
+// Read once at startup so the pin survives in-app navigation (which drops the query).
+let pinned: number | null | undefined;
+
 function pinnedMinutes(): number | null {
-  if (typeof window === "undefined" || !window.location?.search) return null;
-  const t = new URLSearchParams(window.location.search).get("t");
-  if (!t) return null;
-  const [h, m] = t.split(":").map(Number);
-  return Number.isFinite(h) ? h * 60 + (m || 0) : null;
+  if (pinned !== undefined) return pinned;
+  pinned = null;
+  if (typeof window !== "undefined" && window.location?.search) {
+    const t = new URLSearchParams(window.location.search).get("t");
+    if (t) {
+      const [h, m] = t.split(":").map(Number);
+      if (Number.isFinite(h)) pinned = h * 60 + (m || 0);
+    }
+  }
+  return pinned;
 }

@@ -51,8 +51,8 @@ describe("neverMissTwice", () => {
 
   it("survives a single miss and skips rest days", () => {
     const blocks = [good("2026-11-07"), bad("2026-11-08"), good("2026-11-10"), good("2026-11-11")];
-    // 11-09 is a rest day (no promises). Single miss on 11-08 doesn't break it.
-    expect(neverMissTwice(blocks, "2026-11-11", 5).streak).toBe(5);
+    // 11-09 is a rest day (no promises), so it doesn't count. The single miss on 11-08 doesn't break it.
+    expect(neverMissTwice(blocks, "2026-11-11", 5).streak).toBe(4);
   });
 
   it("breaks on two misses in a row", () => {

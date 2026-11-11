@@ -7,7 +7,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useReducer, useRef } from "react";
 import type { Block, DayLog, InboxItem, Pillar, Settings } from "./types";
 import { DEFAULT_SETTINGS } from "./types";
-import { SEED_PILLARS, seedDay, seedInbox } from "./seed";
+import { SEED_PILLARS, seedDay, seedHistory, seedInbox } from "./seed";
 import { copyToTomorrow } from "./schedule";
 import { toDateKey } from "./time";
 
@@ -70,7 +70,7 @@ export function freshState(): AppState {
   const today = toDateKey(new Date());
   return {
     hydrated: true,
-    blocks: seedDay(today),
+    blocks: [...seedHistory(today), ...seedDay(today)],
     inbox: seedInbox(Date.now()),
     pillars: SEED_PILLARS,
     dayLogs: {},

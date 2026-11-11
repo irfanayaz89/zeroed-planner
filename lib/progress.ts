@@ -49,7 +49,8 @@ export type ChainDay = "kept" | "miss" | "rest" | "future";
 /**
  * Never miss twice: a day is a miss when under half its promises were kept;
  * a day without promises is a rest day and doesn't count either way. The
- * streak only breaks on two misses in a row.
+ * streak only breaks on two misses in a row. The streak counts kept and
+ * single-miss days since the last break.
  */
 export function chainDay(blocks: Block[], date: string, today: string): ChainDay {
   if (date > today) return "future";
@@ -68,10 +69,8 @@ export function neverMissTwice(blocks: Block[], today: string, lookback = 60): {
   let prevMiss = false;
   for (let i = chain.length - 1; i >= 0; i--) {
     const d = chain[i];
-    if (d === "rest" || d === "future") {
-      if (d === "rest") streak++;
-      continue;
-    }
+    // Rest days and today (until it's over) neither count nor break the chain.
+    if (d === "rest" || d === "future") continue;
     if (d === "miss" && prevMiss) {
       streak--; // the first miss of the pair belongs to the broken chain
       break;

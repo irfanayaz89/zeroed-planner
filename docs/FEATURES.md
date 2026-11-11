@@ -23,6 +23,16 @@ The Plan (Today) section takes *concepts* from visual, ADHD-friendly planners su
 3. **Morning plan and focus:** morning plan with energy check-in and Sort it for me, Focus mode, routine runner.
 4. **Close the loop:** evening shutdown, Week, Sunday review, Pillars (with Never miss twice), Me (settings).
 
+## Not built yet
+
+- Calendar import (school, Google, Apple) for fixed blocks.
+- Push notifications for the two daily nudges and focus starts (Lock Screen / Live Activity).
+- Sync and accounts (Supabase, like Zeroed V1). Storage is on-device for now.
+- An AI co-planner behind Sort it for me (the local parser is the fallback).
+- Editing a block's time by dragging on the ribbon; repeating routines.
+- Dot, pending the decision in the spec.
+- Other themes (dark burgundy, light burgundy).
+
 ## Rules that keep it uncluttered
 
 1. Today shows Now plus at most 4 upcoming blocks. Everything else is folded away.

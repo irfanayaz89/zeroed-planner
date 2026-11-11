@@ -1,0 +1,17 @@
+{
+  "expo": {
+    "name": "Zeroed Planner",
+    "slug": "zeroed-planner",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "scheme": "zeroedplanner",
+    "userInterfaceStyle": "dark",
+    "backgroundColor": "#1C1D20",
+    "newArchEnabled": true,
+    "ios": { "supportsTablet": false, "bundleIdentifier": "com.zeronoiselabs.zeroedplanner" },
+    "android": { "package": "com.zeronoiselabs.zeroedplanner" },
+    "web": { "bundler": "metro", "output": "single" },
+    "plugins": ["expo-router", "expo-font"],
+    "experiments": { "typedRoutes": false }
+  }
+}

@@ -36,6 +36,9 @@ function Root() {
   return (
     <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.bg } }}>
       <Stack.Screen name="(tabs)" />
+      <Stack.Screen name="focus/[id]" options={{ presentation: "fullScreenModal", animation: "fade" }} />
+      <Stack.Screen name="routine/[id]" options={{ presentation: "fullScreenModal" }} />
+      <Stack.Screen name="plan" options={{ presentation: "fullScreenModal" }} />
     </Stack>
   );
 }

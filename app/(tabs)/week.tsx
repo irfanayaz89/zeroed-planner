@@ -48,7 +48,7 @@ export default function WeekScreen() {
           const isToday = r.date === date;
           const blocks = dayBlocks(state.blocks, r.date).filter((b) => b.kind !== "buffer");
           return (
-            <View key={r.date} style={{ flex: 1, alignItems: "center", gap: 6 }} accessible accessibilityLabel={isToday ? `Today: ${r.kept} of ${r.total} kept so far` : `${shortDay(r.date)}: ${pct(r.rate)} kept`}>
+            <View key={r.date} style={{ flex: 1, alignItems: "center", gap: 6 }} accessible accessibilityLabel={isToday ? `Today: ${r.kept} of ${r.total} kept so far` : r.date > date ? `${shortDay(r.date)}: still to come` : `${shortDay(r.date)}: ${pct(r.rate)} kept`}>
               <Text variant="caption" color={isToday ? colors.ink : colors.soft}>{shortDay(r.date)}</Text>
               <View
                 style={{
@@ -74,7 +74,8 @@ export default function WeekScreen() {
                   );
                 })}
               </View>
-              <Text variant="caption" color={colors.ink}>{isToday ? `${r.kept}/${r.total}` : pct(r.rate)}</Text>
+              {/* Future days have nothing kept yet, so a rate there would read as 0%. */}
+              <Text variant="caption" color={colors.ink}>{isToday ? `${r.kept}/${r.total}` : r.date > date ? "–" : pct(r.rate)}</Text>
             </View>
           );
         })}

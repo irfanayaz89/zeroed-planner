@@ -1,4 +1,4 @@
-import { Text as RNText, type TextProps, type TextStyle } from "react-native";
+import { StyleSheet, Text as RNText, type TextProps, type TextStyle } from "react-native";
 import { colors, fonts } from "@/constants/theme";
 
 type Variant = "title" | "heading" | "body" | "bodyBold" | "label" | "caption" | "eyebrow";
@@ -14,5 +14,13 @@ const variants: Record<Variant, TextStyle> = {
 };
 
 export function Text({ variant = "body", color, style, ...rest }: TextProps & { variant?: Variant; color?: string }) {
-  return <RNText {...rest} style={[variants[variant], color ? { color } : null, style]} />;
+  let base = variants[variant];
+  // A variant's lineHeight is sized for its own fontSize. If the caller makes the text bigger
+  // without a lineHeight of its own, drop it, or iOS clips the top of the glyphs.
+  const flat = StyleSheet.flatten(style);
+  if (base.lineHeight && base.fontSize && (flat?.fontSize ?? 0) > base.fontSize && flat?.lineHeight === undefined) {
+    const { lineHeight: _drop, ...rest_ } = base;
+    base = rest_;
+  }
+  return <RNText {...rest} style={[base, color ? { color } : null, style]} />;
 }

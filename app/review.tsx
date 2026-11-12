@@ -8,7 +8,7 @@ import { Screen } from "@/components/ui/Screen";
 import { Text } from "@/components/ui/Text";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
-import { useToast } from "@/components/ui/Toast";
+import { ToastHost, useToast } from "@/components/ui/Toast";
 import { Stepper } from "@/components/ui/Stepper";
 import { useStore } from "@/lib/store";
 import { useNow } from "@/hooks/useNow";
@@ -53,76 +53,80 @@ export default function Review() {
   const delta = rate !== null && prev !== null ? Math.round((rate - prev) * 100) : null;
 
   return (
-    <Screen>
-      <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-        <Text variant="eyebrow">Sunday review</Text>
-        <Pressable accessibilityRole="button" accessibilityLabel="Close" onPress={() => router.back()} hitSlop={12}>
-          <Ionicons name="close" size={24} color={colors.ink} />
-        </Pressable>
-      </View>
+    <View style={{ flex: 1 }}>
+      <Screen>
+        <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+          <Text variant="eyebrow">Sunday review</Text>
+          <Pressable accessibilityRole="button" accessibilityLabel="Close" onPress={() => router.back()} hitSlop={12}>
+            <Ionicons name="close" size={24} color={colors.ink} />
+          </Pressable>
+        </View>
 
-      <Text variant="title" style={{ marginBottom: 12 }}>Wins</Text>
-      <Card style={{ gap: 10 }}>
-        <Text variant="body">
-          Promise rate <Text variant="bodyBold">{pct(rate)}</Text>
-          {delta !== null ? ` (${delta >= 0 ? "+" : ""}${delta} pts on the week before)` : ""}
-        </Text>
-        <Text variant="body">
-          Big thing done <Text variant="bodyBold">{big.done} of {big.had}</Text> days
-        </Text>
-        {best ? (
+        <Text variant="title" style={{ marginBottom: 12 }}>Wins</Text>
+        <Card style={{ gap: 10 }}>
           <Text variant="body">
-            {best.p.icon} {best.p.name} led the way: {best.done} of {best.p.weeklyTarget}
-            {best.p.unit === "h" ? "h" : ` ${best.p.unit}`}
+            Promise rate <Text variant="bodyBold">{pct(rate)}</Text>
+            {delta !== null ? ` (${delta >= 0 ? "+" : ""}${delta} pts on the week before)` : ""}
           </Text>
-        ) : null}
-      </Card>
-
-      <Text variant="title" style={{ marginTop: 24, marginBottom: 12 }}>What slipped</Text>
-      <Card style={{ gap: 12 }}>
-        {slip.worst ? (
-          <>
+          <Text variant="body">
+            Big thing done <Text variant="bodyBold">{big.done} of {big.had}</Text> days
+          </Text>
+          {best ? (
             <Text variant="body">
-              <Text variant="bodyBold">{slip.worst.title}</Text> slipped {slip.worst.count} times, usually from {fmtClock(slip.worst.earliest)}.
-              {slip.dayRate !== null && slip.eveningRate !== null
-                ? ` You keep daytime blocks ${pct(slip.dayRate)} of the time but evening blocks only ${pct(slip.eveningRate)}.`
-                : ""}
+              {best.p.icon} {best.p.name} led the way: {best.done} of {best.p.weeklyTarget}
+              {best.p.unit === "h" ? "h" : ` ${best.p.unit}`}
             </Text>
-            {fix === "none" ? (
-              <View style={{ flexDirection: "row", gap: 8 }}>
-                <Button small label={`Move it to ${fmtClock(FIX_TIME)}`} onPress={applyFix} />
-                <Button small tone="secondary" label="Keep it" onPress={() => setFix("kept")} />
-              </View>
-            ) : (
-              <Text variant="label">{fix === "moved" ? "Moved. Let's see how next week goes." : "Keeping it as it is."}</Text>
-            )}
-          </>
-        ) : (
-          <Text variant="body">Nothing slipped more than once. Steady week.</Text>
-        )}
-      </Card>
+          ) : null}
+        </Card>
 
-      <Text variant="title" style={{ marginTop: 24, marginBottom: 12 }}>Next week's targets</Text>
-      <Card style={{ gap: 14 }}>
-        {progress.map(({ p, done }) => {
-          const under = done / p.weeklyTarget < 0.6;
-          const t = targets[p.id];
-          return (
-            <View key={p.id} style={{ gap: 4 }}>
-              <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-                <Text variant="bodyBold" style={{ flex: 1 }}>{p.icon} {p.name}</Text>
-                <Stepper value={t} onChange={(v) => setTargets({ ...targets, [p.id]: v })} label={`${p.name} target`} />
-                <Text variant="label" style={{ width: 64 }}>{p.unit === "h" ? "hours" : p.unit}</Text>
-              </View>
-              {under && t > p.weeklyTarget ? (
-                <Text variant="caption" color={colors.warn}>{p.name} was under 60% this week. Keep the target the same, don't raise it.</Text>
-              ) : null}
-            </View>
-          );
-        })}
-      </Card>
+        <Text variant="title" style={{ marginTop: 24, marginBottom: 12 }}>What slipped</Text>
+        <Card style={{ gap: 12 }}>
+          {slip.worst ? (
+            <>
+              <Text variant="body">
+                <Text variant="bodyBold">{slip.worst.title}</Text> slipped {slip.worst.count} times, usually from {fmtClock(slip.worst.earliest)}.
+                {slip.dayRate !== null && slip.eveningRate !== null
+                  ? ` You keep daytime blocks ${pct(slip.dayRate)} of the time but evening blocks only ${pct(slip.eveningRate)}.`
+                  : ""}
+              </Text>
+              {fix === "none" ? (
+                <View style={{ flexDirection: "row", gap: 8 }}>
+                  <Button small label={`Move it to ${fmtClock(FIX_TIME)}`} onPress={applyFix} />
+                  <Button small tone="secondary" label="Keep it" onPress={() => setFix("kept")} />
+                </View>
+              ) : (
+                <Text variant="label">{fix === "moved" ? "Moved. Let's see how next week goes." : "Keeping it as it is."}</Text>
+              )}
+            </>
+          ) : (
+            <Text variant="body">Nothing slipped more than once. Steady week.</Text>
+          )}
+        </Card>
 
-      <Button label="Set next week" onPress={save} style={{ marginTop: 20 }} />
-    </Screen>
+        <Text variant="title" style={{ marginTop: 24, marginBottom: 12 }}>Next week's targets</Text>
+        <Card style={{ gap: 14 }}>
+          {progress.map(({ p, done }) => {
+            const under = done / p.weeklyTarget < 0.6;
+            const t = targets[p.id];
+            return (
+              <View key={p.id} style={{ gap: 4 }}>
+                <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+                  <Text variant="bodyBold" style={{ flex: 1 }}>{p.icon} {p.name}</Text>
+                  <Stepper value={t} onChange={(v) => setTargets({ ...targets, [p.id]: v })} label={`${p.name} target`} />
+                  <Text variant="label" style={{ width: 64 }}>{p.unit === "h" ? "hours" : p.unit}</Text>
+                </View>
+                {under && t > p.weeklyTarget ? (
+                  <Text variant="caption" color={colors.warn}>{p.name} was under 60% this week. Keep the target the same, don't raise it.</Text>
+                ) : null}
+              </View>
+            );
+          })}
+        </Card>
+
+        <Button label="Set next week" onPress={save} style={{ marginTop: 20 }} />
+      </Screen>
+      {/* This route is a native full-screen modal, which hides the root toast on iOS. */}
+      <ToastHost />
+    </View>
   );
 }

@@ -96,7 +96,9 @@ export function NowCard({
   } else {
     const until = next ? next.startMin : windDownMin;
     eyebrow = "Free time";
-    title = `${fmtDuration(until - nowMin)} until ${next ? next.title : "wind-down"}`;
+    const left = until - nowMin;
+    // Round up so the last minute never reads "0m until".
+    title = left < 1 ? `${next ? next.title : "Wind-down"} starts now` : `${fmtDuration(Math.ceil(left))} until ${next ? next.title : "wind-down"}`;
     meta = `Now to ${fmtClock(until)}`;
     icon = "🫧";
     actions = free?.keptFree ? (

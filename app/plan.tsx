@@ -11,7 +11,7 @@ import { Screen } from "@/components/ui/Screen";
 import { Text } from "@/components/ui/Text";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
-import { useToast } from "@/components/ui/Toast";
+import { ToastHost, useToast } from "@/components/ui/Toast";
 import { newId, useStore } from "@/lib/store";
 import { useNow } from "@/hooks/useNow";
 import { parseBrainDump } from "@/lib/brainDump";
@@ -156,163 +156,167 @@ export default function MorningPlan() {
   const close = () => (router.canGoBack() ? router.back() : router.replace("/"));
 
   return (
-    <Screen>
-      <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-        <Text variant="eyebrow">Plan today · {step + 1} of {STEPS.length}</Text>
-        <Pressable accessibilityRole="button" accessibilityLabel="Close" onPress={close} hitSlop={12}>
-          <Ionicons name="close" size={24} color={colors.ink} />
-        </Pressable>
-      </View>
-      <View style={{ flexDirection: "row", gap: 6, marginBottom: 20 }}>
-        {STEPS.map((s, i) => <View key={s} style={{ flex: 1, height: 4, borderRadius: 2, backgroundColor: i <= step ? colors.accent : colors.bar }} />)}
-      </View>
+    <View style={{ flex: 1 }}>
+      <Screen>
+        <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+          <Text variant="eyebrow">Plan today · {step + 1} of {STEPS.length}</Text>
+          <Pressable accessibilityRole="button" accessibilityLabel="Close" onPress={close} hitSlop={12}>
+            <Ionicons name="close" size={24} color={colors.ink} />
+          </Pressable>
+        </View>
+        <View style={{ flexDirection: "row", gap: 6, marginBottom: 20 }}>
+          {STEPS.map((s, i) => <View key={s} style={{ flex: 1, height: 4, borderRadius: 2, backgroundColor: i <= step ? colors.accent : colors.bar }} />)}
+        </View>
 
-      {step === 0 ? (
-        <>
-          <Text variant="title" style={{ marginBottom: 6 }}>How's your energy?</Text>
-          <Text variant="label" style={{ marginBottom: 16 }}>Plan for the day you've got, not the ideal one.</Text>
-          <View style={{ gap: 10 }}>
-            {ENERGY.map((e) => (
-              <Pressable
-                key={e.v}
-                accessibilityRole="radio"
-                accessibilityState={{ selected: energy === e.v }}
-                onPress={() => setEnergy(e.v)}
-                style={{ flexDirection: "row", alignItems: "center", gap: 14, padding: 16, borderRadius: radius.card, backgroundColor: colors.card, borderWidth: 2, borderColor: energy === e.v ? colors.accent : "transparent" }}
-              >
-                <Text style={{ fontSize: 28 }}>{e.icon}</Text>
-                <View style={{ flex: 1 }}>
-                  <Text variant="bodyBold">{e.label}</Text>
-                  <Text variant="caption">{e.hint}</Text>
-                </View>
-              </Pressable>
-            ))}
-          </View>
-        </>
-      ) : null}
-
-      {step === 1 ? (
-        <>
-          <Text variant="title" style={{ marginBottom: 6 }}>What's fixed today</Text>
-          <Text variant="label" style={{ marginBottom: 16 }}>
-            {fmtDuration(free)} free between {fmtClock(firstFree)} and {fmtClock(settings.windDownMin)}
-          </Text>
-          <Card style={{ gap: 12 }}>
-            {fixed.length === 0 ? <Text variant="label">Nothing fixed. The day is yours.</Text> : null}
-            {fixed.map((b) => (
-              <View key={b.id} style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-                <Text style={{ fontSize: 18 }}>{b.icon ?? "📌"}</Text>
-                <Text variant="bodyBold" style={{ flex: 1 }}>{b.title}</Text>
-                <Text variant="label">{fmtClock(b.startMin)} to {fmtClock(endMin(b))}</Text>
-              </View>
-            ))}
-          </Card>
-        </>
-      ) : null}
-
-      {step === 2 ? (
-        <>
-          <Text variant="title" style={{ marginBottom: 6 }}>What matters today</Text>
-          <Text variant="label" style={{ marginBottom: 14 }}>Pick one big thing, then up to 3 more.</Text>
-
-          <Card style={{ marginBottom: 14 }}>
-            <Text variant="eyebrow" style={{ marginBottom: 8 }}>Brain dump</Text>
-            <TextInput
-              value={dump}
-              onChangeText={setDump}
-              multiline
-              placeholder={"Everything on your mind, one per line.\nchem past paper 1h, call gran, gym"}
-              placeholderTextColor={colors.faint}
-              accessibilityLabel="Brain dump"
-              style={{ minHeight: 76, color: colors.ink, fontFamily: fonts.body, fontSize: 15, textAlignVertical: "top" }}
-            />
-            <Button small label="Sort it for me" onPress={sortIt} disabled={!dump.trim()} style={{ alignSelf: "flex-start", marginTop: 8 }} />
-          </Card>
-
-          <CapacityMeter ratio={cap.ratio} level={cap.level} plannedMin={cap.withBufferMin} freeMin={free} energy={energy} />
-
-          <View style={{ gap: 8, marginTop: 14 }}>
-            {candidates.map((c) => {
-              const isBig = big === c.key;
-              const isMore = more.includes(c.key);
-              const pillar = state.pillars.find((p) => p.id === c.pillarId);
-              return (
-                <View key={c.key} style={{ flexDirection: "row", alignItems: "center", gap: 10, backgroundColor: colors.card, borderRadius: 16, padding: 12, borderWidth: 1.5, borderColor: isBig ? colors.accent : "transparent" }}>
-                  <Pressable
-                    accessibilityRole="radio"
-                    accessibilityState={{ selected: isBig }}
-                    accessibilityLabel={`Make ${c.title} the big thing`}
-                    hitSlop={8}
-                    onPress={() => {
-                      setBig(c.key);
-                      setMore(more.filter((k) => k !== c.key));
-                    }}
-                  >
-                    <Ionicons name={isBig ? "radio-button-on" : "radio-button-off"} size={22} color={isBig ? colors.accent : colors.soft} />
-                  </Pressable>
-                  <Text style={{ fontSize: 20 }}>{c.icon ?? "✳️"}</Text>
+        {step === 0 ? (
+          <>
+            <Text variant="title" style={{ marginBottom: 6 }}>How's your energy?</Text>
+            <Text variant="label" style={{ marginBottom: 16 }}>Plan for the day you've got, not the ideal one.</Text>
+            <View style={{ gap: 10 }}>
+              {ENERGY.map((e) => (
+                <Pressable
+                  key={e.v}
+                  accessibilityRole="radio"
+                  accessibilityState={{ selected: energy === e.v }}
+                  onPress={() => setEnergy(e.v)}
+                  style={{ flexDirection: "row", alignItems: "center", gap: 14, padding: 16, borderRadius: radius.card, backgroundColor: colors.card, borderWidth: 2, borderColor: energy === e.v ? colors.accent : "transparent" }}
+                >
+                  <Text style={{ fontSize: 28 }}>{e.icon}</Text>
                   <View style={{ flex: 1 }}>
-                    <Text variant="bodyBold">{c.title}</Text>
-                    <Text variant="caption">{[fmtDuration(c.durationMin), pillar?.name, c.reason].filter(Boolean).join(" · ")}</Text>
+                    <Text variant="bodyBold">{e.label}</Text>
+                    <Text variant="caption">{e.hint}</Text>
                   </View>
-                  <Pressable accessibilityRole="checkbox" accessibilityState={{ checked: isMore, disabled: isBig }} accessibilityLabel={`Add ${c.title}`} hitSlop={8} onPress={() => toggleMore(c.key)}>
-                    <Ionicons name={isMore ? "checkbox" : "square-outline"} size={22} color={isBig ? colors.bar : isMore ? colors.accent : colors.soft} />
-                  </Pressable>
-                </View>
-              );
-            })}
-          </View>
-        </>
-      ) : null}
+                </Pressable>
+              ))}
+            </View>
+          </>
+        ) : null}
 
-      {step === 3 ? (
-        <>
-          <Text variant="title" style={{ marginBottom: 6 }}>Here's your day</Text>
-          <Text variant="label" style={{ marginBottom: 16 }}>Big thing first, while energy is high, with breathing room between.</Text>
-          <Card style={{ gap: 10 }}>
-            {[...preview.base.filter((b) => endMin(b) > nowMin), ...preview.placed, ...preview.buffers].sort(byStart).map((b) => {
-              const isNew = preview.placed.some((p) => p.id === b.id);
-              return (
-                <View key={b.id} style={{ flexDirection: "row", alignItems: "center", gap: 10, opacity: b.kind === "anchor" ? 0.6 : 1 }}>
-                  <Text variant="label" style={{ width: 44 }}>{fmtClock(b.startMin)}</Text>
-                  {b.kind === "buffer" ? (
-                    <Text variant="caption">Breathing room · {fmtDuration(b.durationMin)}</Text>
-                  ) : (
-                    <>
-                      <Text style={{ fontSize: 16 }}>{b.icon ?? "✳️"}</Text>
-                      <Text variant={isNew ? "bodyBold" : "body"} style={{ flex: 1 }}>{b.title}</Text>
-                      {b.isBig ? <Text variant="eyebrow">Big</Text> : null}
-                    </>
-                  )}
-                </View>
-              );
-            })}
-          </Card>
-          {preview.unplaced.length ? (
-            <Text variant="label" style={{ marginTop: 12 }}>
-              Didn't fit, going to the inbox: {preview.unplaced.map((b) => b.title).join(", ")}
+        {step === 1 ? (
+          <>
+            <Text variant="title" style={{ marginBottom: 6 }}>What's fixed today</Text>
+            <Text variant="label" style={{ marginBottom: 16 }}>
+              {fmtDuration(free)} free between {fmtClock(firstFree)} and {fmtClock(settings.windDownMin)}
             </Text>
-          ) : null}
-          {preview.unchosenDay.length ? (
-            <Text variant="label" style={{ marginTop: 8 }}>Not today, back to the inbox: {preview.unchosenDay.map((b) => b.title).join(", ")}</Text>
-          ) : null}
-        </>
-      ) : null}
+            <Card style={{ gap: 12 }}>
+              {fixed.length === 0 ? <Text variant="label">Nothing fixed. The day is yours.</Text> : null}
+              {fixed.map((b) => (
+                <View key={b.id} style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+                  <Text style={{ fontSize: 18 }}>{b.icon ?? "📌"}</Text>
+                  <Text variant="bodyBold" style={{ flex: 1 }}>{b.title}</Text>
+                  <Text variant="label">{fmtClock(b.startMin)} to {fmtClock(endMin(b))}</Text>
+                </View>
+              ))}
+            </Card>
+          </>
+        ) : null}
 
-      <View style={{ flexDirection: "row", gap: 10, marginTop: 24 }}>
-        {step > 0 ? <Button label="Back" tone="secondary" onPress={() => setStep(step - 1)} style={{ flex: 1 }} /> : null}
-        {step < 3 ? (
-          <Button
-            label={step === 2 && !big ? "Pick a big thing" : "Next"}
-            disabled={step === 2 && !big}
-            onPress={() => setStep(step + 1)}
-            style={{ flex: 2 }}
-          />
-        ) : (
-          <Button label="Lock in the day" onPress={lockIn} style={{ flex: 2 }} />
-        )}
-      </View>
-    </Screen>
+        {step === 2 ? (
+          <>
+            <Text variant="title" style={{ marginBottom: 6 }}>What matters today</Text>
+            <Text variant="label" style={{ marginBottom: 14 }}>Pick one big thing, then up to 3 more.</Text>
+
+            <Card style={{ marginBottom: 14 }}>
+              <Text variant="eyebrow" style={{ marginBottom: 8 }}>Brain dump</Text>
+              <TextInput
+                value={dump}
+                onChangeText={setDump}
+                multiline
+                placeholder={"Everything on your mind, one per line.\nchem past paper 1h, call gran, gym"}
+                placeholderTextColor={colors.faint}
+                accessibilityLabel="Brain dump"
+                style={{ minHeight: 76, color: colors.ink, fontFamily: fonts.body, fontSize: 15, textAlignVertical: "top" }}
+              />
+              <Button small label="Sort it for me" onPress={sortIt} disabled={!dump.trim()} style={{ alignSelf: "flex-start", marginTop: 8 }} />
+            </Card>
+
+            <CapacityMeter ratio={cap.ratio} level={cap.level} plannedMin={cap.withBufferMin} freeMin={free} energy={energy} />
+
+            <View style={{ gap: 8, marginTop: 14 }}>
+              {candidates.map((c) => {
+                const isBig = big === c.key;
+                const isMore = more.includes(c.key);
+                const pillar = state.pillars.find((p) => p.id === c.pillarId);
+                return (
+                  <View key={c.key} style={{ flexDirection: "row", alignItems: "center", gap: 10, backgroundColor: colors.card, borderRadius: 16, padding: 12, borderWidth: 1.5, borderColor: isBig ? colors.accent : "transparent" }}>
+                    <Pressable
+                      accessibilityRole="radio"
+                      accessibilityState={{ selected: isBig }}
+                      accessibilityLabel={`Make ${c.title} the big thing`}
+                      hitSlop={8}
+                      onPress={() => {
+                        setBig(c.key);
+                        setMore(more.filter((k) => k !== c.key));
+                      }}
+                    >
+                      <Ionicons name={isBig ? "radio-button-on" : "radio-button-off"} size={22} color={isBig ? colors.accent : colors.soft} />
+                    </Pressable>
+                    <Text style={{ fontSize: 20 }}>{c.icon ?? "✳️"}</Text>
+                    <View style={{ flex: 1 }}>
+                      <Text variant="bodyBold">{c.title}</Text>
+                      <Text variant="caption">{[fmtDuration(c.durationMin), pillar?.name, c.reason].filter(Boolean).join(" · ")}</Text>
+                    </View>
+                    <Pressable accessibilityRole="checkbox" accessibilityState={{ checked: isMore, disabled: isBig }} accessibilityLabel={`Add ${c.title}`} hitSlop={8} onPress={() => toggleMore(c.key)}>
+                      <Ionicons name={isMore ? "checkbox" : "square-outline"} size={22} color={isBig ? colors.bar : isMore ? colors.accent : colors.soft} />
+                    </Pressable>
+                  </View>
+                );
+              })}
+            </View>
+          </>
+        ) : null}
+
+        {step === 3 ? (
+          <>
+            <Text variant="title" style={{ marginBottom: 6 }}>Here's your day</Text>
+            <Text variant="label" style={{ marginBottom: 16 }}>Big thing first, while energy is high, with breathing room between.</Text>
+            <Card style={{ gap: 10 }}>
+              {[...preview.base.filter((b) => endMin(b) > nowMin), ...preview.placed, ...preview.buffers].sort(byStart).map((b) => {
+                const isNew = preview.placed.some((p) => p.id === b.id);
+                return (
+                  <View key={b.id} style={{ flexDirection: "row", alignItems: "center", gap: 10, opacity: b.kind === "anchor" ? 0.6 : 1 }}>
+                    <Text variant="label" style={{ width: 44 }}>{fmtClock(b.startMin)}</Text>
+                    {b.kind === "buffer" ? (
+                      <Text variant="caption">Breathing room · {fmtDuration(b.durationMin)}</Text>
+                    ) : (
+                      <>
+                        <Text style={{ fontSize: 16 }}>{b.icon ?? "✳️"}</Text>
+                        <Text variant={isNew ? "bodyBold" : "body"} style={{ flex: 1 }}>{b.title}</Text>
+                        {b.isBig ? <Text variant="eyebrow">Big</Text> : null}
+                      </>
+                    )}
+                  </View>
+                );
+              })}
+            </Card>
+            {preview.unplaced.length ? (
+              <Text variant="label" style={{ marginTop: 12 }}>
+                Didn't fit, going to the inbox: {preview.unplaced.map((b) => b.title).join(", ")}
+              </Text>
+            ) : null}
+            {preview.unchosenDay.length ? (
+              <Text variant="label" style={{ marginTop: 8 }}>Not today, back to the inbox: {preview.unchosenDay.map((b) => b.title).join(", ")}</Text>
+            ) : null}
+          </>
+        ) : null}
+
+        <View style={{ flexDirection: "row", gap: 10, marginTop: 24 }}>
+          {step > 0 ? <Button label="Back" tone="secondary" onPress={() => setStep(step - 1)} style={{ flex: 1 }} /> : null}
+          {step < 3 ? (
+            <Button
+              label={step === 2 && !big ? "Pick a big thing" : "Next"}
+              disabled={step === 2 && !big}
+              onPress={() => setStep(step + 1)}
+              style={{ flex: 2 }}
+            />
+          ) : (
+            <Button label="Lock in the day" onPress={lockIn} style={{ flex: 2 }} />
+          )}
+        </View>
+      </Screen>
+      {/* This route is a native full-screen modal, which hides the root toast on iOS. */}
+      <ToastHost />
+    </View>
   );
 }
 

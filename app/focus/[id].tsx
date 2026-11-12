@@ -6,7 +6,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { colors, fonts } from "@/constants/theme";
 import { Text } from "@/components/ui/Text";
 import { Button } from "@/components/ui/Button";
-import { useToast } from "@/components/ui/Toast";
+import { ToastHost, useToast } from "@/components/ui/Toast";
 import { CometArc, arcPhase } from "@/components/focus/CometArc";
 import { RollingDigits } from "@/components/focus/RollingDigits";
 import { StarDust } from "@/components/focus/StarDust";
@@ -103,6 +103,8 @@ export default function FocusScreen() {
         <Button label="+5 min" tone="secondary" onPress={plusFive} style={{ flex: 1 }} />
         <Button label="Done" onPress={done} style={{ flex: 2 }} />
       </View>
+      {/* This route is a native full-screen modal, which hides the root toast on iOS. */}
+      <ToastHost />
     </View>
   );
 }

@@ -8,7 +8,7 @@ import { Card } from "@/components/ui/Card";
 import { useStore } from "@/lib/store";
 import { useNow } from "@/hooks/useNow";
 import { dayBlocks } from "@/lib/schedule";
-import { pillarWeekProgress, weekRate, weekRates } from "@/lib/progress";
+import { pillarWeekProgress, targetFor, weekRate, weekRates } from "@/lib/progress";
 import { addDays, shortDay, weekStart } from "@/lib/time";
 import { blockColor } from "@/components/blockStyle";
 
@@ -85,15 +85,16 @@ export default function WeekScreen() {
         <Text variant="eyebrow">Pillar balance</Text>
         {state.pillars.map((p) => {
           const done = pillarWeekProgress(state.blocks, p, ws);
+          const target = targetFor(p, ws);
           const unit = p.unit === "h" ? "h" : ` ${p.unit}`;
           return (
             <View key={p.id} style={{ gap: 6 }}>
               <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
                 <Text variant="bodyBold">{p.icon} {p.name}</Text>
-                <Text variant="label">{done} of {p.weeklyTarget}{unit}</Text>
+                <Text variant="label">{done} of {target}{unit}</Text>
               </View>
               <View style={{ height: 8, borderRadius: 4, backgroundColor: colors.bar, overflow: "hidden" }}>
-                <View style={{ height: 8, width: `${Math.min(100, (done / p.weeklyTarget) * 100)}%`, backgroundColor: p.color }} />
+                <View style={{ height: 8, width: `${Math.min(100, (done / target) * 100)}%`, backgroundColor: p.color }} />
               </View>
             </View>
           );

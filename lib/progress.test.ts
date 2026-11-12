@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Block, Pillar } from "./types";
-import { dayRate, neverMissTwice, pillarWeekProgress, slipInsight } from "./progress";
+import { dayRate, neverMissTwice, pillarWeekProgress, slipInsight, targetFor } from "./progress";
 
 let n = 0;
 const blk = (date: string, over: Partial<Block> = {}): Block => ({
@@ -73,5 +73,15 @@ describe("slipInsight", () => {
     expect(s.worst).toMatchObject({ title: "Read", count: 2 });
     expect(s.eveningRate).toBe(0);
     expect(s.dayRate).toBe(1);
+  });
+});
+
+describe("targetFor", () => {
+  it("uses the latest target set for that week or earlier", () => {
+    const p = { ...study, weeklyTarget: 8, targetsByWeek: { "2026-11-16": 10, "2026-11-30": 6 } };
+    expect(targetFor(p, "2026-11-09")).toBe(8);
+    expect(targetFor(p, "2026-11-16")).toBe(10);
+    expect(targetFor(p, "2026-11-23")).toBe(10);
+    expect(targetFor(p, "2026-11-30")).toBe(6);
   });
 });

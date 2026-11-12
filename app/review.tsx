@@ -12,8 +12,8 @@ import { ToastHost, useToast } from "@/components/ui/Toast";
 import { Stepper } from "@/components/ui/Stepper";
 import { useStore } from "@/lib/store";
 import { useNow } from "@/hooks/useNow";
-import { bigThingDays, pillarWeekProgress, slipInsight, weekRate } from "@/lib/progress";
-import { addDays, fmtClock } from "@/lib/time";
+import { bigThingDays, pillarWeekProgress, slipInsight, targetFor, weekRate } from "@/lib/progress";
+import { addDays, fmtClock, weekStart } from "@/lib/time";
 
 const FIX_TIME = 17 * 60 + 15;
 
@@ -29,10 +29,13 @@ export default function Review() {
   const prev = weekRate(state.blocks, addDays(from, -7));
   const big = bigThingDays(state.blocks, state.dayLogs, from);
   const slip = slipInsight(state.blocks, from, date);
-  const progress = state.pillars.map((p) => ({ p, done: pillarWeekProgress(state.blocks, p, from) }));
-  const best = [...progress].sort((a, b) => b.done / b.p.weeklyTarget - a.done / a.p.weeklyTarget)[0];
+  // Targets: this week's stay as they are; the review sets the ones that start next Monday.
+  const thisWeek = weekStart(date);
+  const nextWeek = addDays(thisWeek, 7);
+  const progress = state.pillars.map((p) => ({ p, done: pillarWeekProgress(state.blocks, p, from), target: targetFor(p, thisWeek) }));
+  const best = [...progress].sort((a, b) => b.done / b.target - a.done / a.target)[0];
 
-  const [targets, setTargets] = useState<Record<string, number>>(() => Object.fromEntries(state.pillars.map((p) => [p.id, p.weeklyTarget])));
+  const [targets, setTargets] = useState<Record<string, number>>(() => Object.fromEntries(state.pillars.map((p) => [p.id, targetFor(p, nextWeek)])));
   const [fix, setFix] = useState<"none" | "moved" | "kept">("none");
 
   const applyFix = () => {
@@ -44,7 +47,7 @@ export default function Review() {
   };
 
   const save = () => {
-    setPillars(state.pillars.map((p) => ({ ...p, weeklyTarget: targets[p.id] ?? p.weeklyTarget })));
+    setPillars(state.pillars.map((p) => ({ ...p, targetsByWeek: { ...p.targetsByWeek, [nextWeek]: targets[p.id] ?? targetFor(p, nextWeek) } })));
     toast("Next week is set");
     router.canGoBack() ? router.back() : router.replace("/week");
   };
@@ -73,7 +76,7 @@ export default function Review() {
           </Text>
           {best ? (
             <Text variant="body">
-              {best.p.icon} {best.p.name} led the way: {best.done} of {best.p.weeklyTarget}
+              {best.p.icon} {best.p.name} led the way: {best.done} of {best.target}
               {best.p.unit === "h" ? "h" : ` ${best.p.unit}`}
             </Text>
           ) : null}
@@ -105,8 +108,8 @@ export default function Review() {
 
         <Text variant="title" style={{ marginTop: 24, marginBottom: 12 }}>Next week's targets</Text>
         <Card style={{ gap: 14 }}>
-          {progress.map(({ p, done }) => {
-            const under = done / p.weeklyTarget < 0.6;
+          {progress.map(({ p, done, target }) => {
+            const under = done / target < 0.6;
             const t = targets[p.id];
             return (
               <View key={p.id} style={{ gap: 4 }}>
@@ -115,7 +118,7 @@ export default function Review() {
                   <Stepper value={t} onChange={(v) => setTargets({ ...targets, [p.id]: v })} label={`${p.name} target`} />
                   <Text variant="label" style={{ width: 64 }}>{p.unit === "h" ? "hours" : p.unit}</Text>
                 </View>
-                {under && t > p.weeklyTarget ? (
+                {under && t > target ? (
                   <Text variant="caption" color={colors.warn}>{p.name} was under 60% this week. Keep the target the same, don't raise it.</Text>
                 ) : null}
               </View>

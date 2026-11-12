@@ -3,6 +3,12 @@ import type { Block, DayLog, Pillar } from "./types";
 import { isOnDay, isPromise } from "./schedule";
 import { addDays } from "./time";
 
+/** The target that applies in the week starting `weekStartKey`: the latest one set for that week or earlier. */
+export function targetFor(pillar: Pillar, weekStartKey: string): number {
+  const keys = Object.keys(pillar.targetsByWeek ?? {}).filter((k) => k <= weekStartKey).sort();
+  return keys.length ? pillar.targetsByWeek![keys[keys.length - 1]] : pillar.weeklyTarget;
+}
+
 export const isKept = (b: Block) => b.status === "done";
 
 /** Progress toward a pillar's weekly target for the 7 days from `weekStartKey`. */

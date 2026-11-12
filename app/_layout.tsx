@@ -39,6 +39,8 @@ function Root() {
       <Stack.Screen name="focus/[id]" options={{ presentation: "fullScreenModal", animation: "fade" }} />
       <Stack.Screen name="routine/[id]" options={{ presentation: "fullScreenModal" }} />
       <Stack.Screen name="plan" options={{ presentation: "fullScreenModal" }} />
+      <Stack.Screen name="shutdown" options={{ presentation: "fullScreenModal" }} />
+      <Stack.Screen name="review" options={{ presentation: "fullScreenModal" }} />
     </Stack>
   );
 }

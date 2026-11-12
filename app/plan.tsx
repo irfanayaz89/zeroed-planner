@@ -84,7 +84,10 @@ export default function MorningPlan() {
     const fromInbox: Candidate[] = state.inbox.map((i) => ({
       key: `i:${i.id}`, title: i.title, icon: i.icon, durationMin: i.durationMin, pillarId: i.pillarId, kind: "task", reason: reasonFor(i.pillarId) ?? "From your inbox", from: { type: "inbox", id: i.id },
     }));
-    return [...dumped, ...fromDay, ...fromInbox].sort((a, b) => Number(!!b.reason?.includes("behind")) - Number(!!a.reason?.includes("behind")));
+    // Fresh brain-dump items stay on top; the rest put behind-pillar work first.
+    const behindFirst = (a: Candidate, b: Candidate) => Number(!!b.reason?.includes("behind")) - Number(!!a.reason?.includes("behind"));
+    const dumpedWithReasons = dumped.map((c) => ({ ...c, reason: reasonFor(c.pillarId) ?? c.reason }));
+    return [...dumpedWithReasons, ...[...fromDay, ...fromInbox].sort(behindFirst)];
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.blocks, state.inbox, dumped, date]);
 

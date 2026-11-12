@@ -128,3 +128,32 @@ export function seedInbox(now: number): InboxItem[] {
     { id: "in-3", title: "Fix bike tyre", icon: "🚲", durationMin: 30, createdAt: now },
   ];
 }
+
+/**
+ * Two weeks of made-up history so Week, Pillars and the Sunday review have
+ * something to show on first run. Deterministic, so screenshots are stable.
+ * Evening reading slips more often, which the Sunday review picks up.
+ */
+export function seedHistory(today: string, days = 13): Block[] {
+  const out: Block[] = [];
+  let seed = 42;
+  const rand = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+  for (let i = days; i >= 1; i--) {
+    const d = new Date(today + "T00:00:00");
+    d.setDate(d.getDate() - i);
+    const date = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    const rest = d.getDay() === 0; // Sundays are rest days
+    for (const b of seedDay(date)) {
+      if (rest && b.kind !== "anchor") continue;
+      const promise = (b.kind === "focus" || b.kind === "task" || b.kind === "routine") && !b.isFixed;
+      if (!promise) {
+        out.push({ ...b, id: b.id.replace("seed", "hist") });
+        continue;
+      }
+      const evening = b.startMin >= 20 * 60 + 30;
+      const kept = rand() < (evening ? 0.45 : 0.85);
+      out.push({ ...b, id: b.id.replace("seed", "hist"), status: kept ? "done" : "missed" });
+    }
+  }
+  return out;
+}

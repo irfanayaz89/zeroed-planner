@@ -43,7 +43,10 @@ export interface Pillar {
   icon: string;
   goal: string;
   milestones: { title: string; done: boolean }[];
+  /** Default weekly target. */
   weeklyTarget: number;
+  /** Targets set for a given week (keyed by Monday), e.g. from the Sunday review. They apply from that week on. */
+  targetsByWeek?: Record<string, number>;
   unit: PillarUnit;
 }
 

@@ -16,7 +16,7 @@ import { newId, useStore } from "@/lib/store";
 import { useNow } from "@/hooks/useNow";
 import { parseBrainDump } from "@/lib/brainDump";
 import { autoPlace, byStart, capacity, dayBlocks, endMin, freeMinutes, isFlexible, isPromise } from "@/lib/schedule";
-import { pillarWeekProgress } from "@/lib/progress";
+import { pillarWeekProgress, targetFor } from "@/lib/progress";
 import { fmtClock, fmtDuration, weekStart } from "@/lib/time";
 import type { Block, Energy } from "@/lib/types";
 
@@ -70,13 +70,13 @@ export default function MorningPlan() {
   // Candidates: what's already on today, the inbox, and the brain dump.
   const week = weekStart(date);
   const behind = state.pillars
-    .map((p) => ({ p, done: pillarWeekProgress(state.blocks, p, week) }))
-    .filter((x) => x.done < x.p.weeklyTarget * 0.75);
+    .map((p) => ({ p, done: pillarWeekProgress(state.blocks, p, week), target: targetFor(p, week) }))
+    .filter((x) => x.done < x.target * 0.75);
 
   const candidates: Candidate[] = useMemo(() => {
     const reasonFor = (pillarId?: string) => {
       const b = behind.find((x) => x.p.id === pillarId);
-      return b ? `${b.p.name} is behind: ${b.done} of ${b.p.weeklyTarget}${b.p.unit === "h" ? "h" : ` ${b.p.unit}`}` : undefined;
+      return b ? `${b.p.name} is behind: ${b.done} of ${b.target}${b.p.unit === "h" ? "h" : ` ${b.p.unit}`}` : undefined;
     };
     const fromDay: Candidate[] = today
       .filter((b) => isPromise(b) && b.status === "planned" && b.kind !== "routine" && endMin(b) > nowMin)

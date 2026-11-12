@@ -9,7 +9,7 @@ import { Sheet } from "@/components/ui/Sheet";
 import { ProgressRing } from "@/components/ui/ProgressRing";
 import { useStore } from "@/lib/store";
 import { useNow } from "@/hooks/useNow";
-import { neverMissTwice, pillarHeatmap, pillarWeekProgress, type ChainDay } from "@/lib/progress";
+import { neverMissTwice, pillarHeatmap, pillarWeekProgress, targetFor, type ChainDay } from "@/lib/progress";
 import { weekStart } from "@/lib/time";
 import type { Pillar } from "@/lib/types";
 
@@ -51,20 +51,21 @@ export default function PillarsScreen() {
       <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 12, marginTop: 12 }}>
         {state.pillars.map((p) => {
           const done = pillarWeekProgress(state.blocks, p, ws);
+          const target = targetFor(p, ws);
           return (
             <Pressable
               key={p.id}
               accessibilityRole="button"
-              accessibilityLabel={`${p.name}: ${done} of ${p.weeklyTarget}${unitLabel(p)} this week. ${p.goal}`}
+              accessibilityLabel={`${p.name}: ${done} of ${target}${unitLabel(p)} this week. ${p.goal}`}
               onPress={() => setOpen(p)}
               style={{ width: "48%", flexGrow: 1, backgroundColor: colors.card, borderRadius: 22, padding: 16, gap: 10 }}
             >
-              <ProgressRing size={58} progress={done / p.weeklyTarget} color={p.color} track={colors.bar}>
+              <ProgressRing size={58} progress={done / target} color={p.color} track={colors.bar}>
                 <Text style={{ fontSize: 22 }}>{p.icon}</Text>
               </ProgressRing>
               <Text variant="heading">{p.name}</Text>
               <Text variant="caption" numberOfLines={2}>{p.goal}</Text>
-              <Text variant="label" color={colors.ink}>{done} of {p.weeklyTarget}{unitLabel(p)} this week</Text>
+              <Text variant="label" color={colors.ink}>{done} of {target}{unitLabel(p)} this week</Text>
             </Pressable>
           );
         })}
@@ -88,12 +89,13 @@ export default function PillarsScreen() {
               <Text variant="eyebrow" style={{ marginBottom: 8 }}>This week</Text>
               {(() => {
                 const done = pillarWeekProgress(state.blocks, live, ws);
+                const target = targetFor(live, ws);
                 return (
                   <>
                     <View style={{ height: 8, borderRadius: 4, backgroundColor: colors.bar, overflow: "hidden" }}>
-                      <View style={{ height: 8, width: `${Math.min(100, (done / live.weeklyTarget) * 100)}%`, backgroundColor: live.color }} />
+                      <View style={{ height: 8, width: `${Math.min(100, (done / target) * 100)}%`, backgroundColor: live.color }} />
                     </View>
-                    <Text variant="label" style={{ marginTop: 6 }}>{done} of {live.weeklyTarget}{unitLabel(live)}</Text>
+                    <Text variant="label" style={{ marginTop: 6 }}>{done} of {target}{unitLabel(live)}</Text>
                   </>
                 );
               })()}

@@ -72,7 +72,7 @@ export default function MeScreen() {
         <Row label="Plan and shutdown">
           <Text variant="label">One each</Text>
         </Row>
-        <Row label={`Wrap-up cue (in app, last ${s.wrapUpCueMin}m)`}>
+        <Row label={`Wrap-up cue (in app, last ${s.wrapUpCueMin || 5}m)`}>
           <Switch
             value={s.wrapUpCueMin > 0}
             onValueChange={(on) => patchSettings({ wrapUpCueMin: on ? 5 : 0 })}

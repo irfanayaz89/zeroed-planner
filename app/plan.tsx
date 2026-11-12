@@ -143,7 +143,11 @@ export default function MorningPlan() {
   const lockIn = () => {
     const { placed, buffers, unplaced, unchosenDay, buffersToDrop } = preview;
     const parked: Block[] = [...unchosenDay, ...buffersToDrop].map((b) => ({ ...b, status: "let_go" }));
-    upsertBlocks([...parked, ...placed, ...buffers]);
+    // One big thing per day: the one picked now replaces any earlier one.
+    const bigId = placed.find((b) => b.isBig)?.id;
+    const parkedIds = new Set(parked.map((b) => b.id));
+    const demoted: Block[] = today.filter((b) => b.isBig && b.id !== bigId && !parkedIds.has(b.id)).map((b) => ({ ...b, isBig: false }));
+    upsertBlocks([...parked, ...demoted, ...placed, ...buffers]);
     for (const b of [...unchosenDay, ...unplaced]) {
       if (b.kind !== "buffer") addInbox({ title: b.title, icon: b.icon, durationMin: b.durationMin, pillarId: b.pillarId });
     }
@@ -157,7 +161,8 @@ export default function MorningPlan() {
 
   return (
     <View style={{ flex: 1 }}>
-      <Screen>
+      {/* Keyed by step so each step opens scrolled to the top. */}
+      <Screen key={step}>
         <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
           <Text variant="eyebrow">Plan today · {step + 1} of {STEPS.length}</Text>
           <Pressable accessibilityRole="button" accessibilityLabel="Close" onPress={close} hitSlop={12}>

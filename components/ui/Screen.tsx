@@ -7,7 +7,14 @@ export function Screen({ children, scroll = true, ...rest }: ScrollViewProps & {
   const pad = { paddingTop: insets.top + 12, paddingHorizontal: 16, paddingBottom: insets.bottom + 120 };
   if (!scroll) return <View style={[{ flex: 1, backgroundColor: colors.bg }, pad]}>{children}</View>;
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: colors.bg }} contentContainerStyle={pad} {...rest}>
+    <ScrollView
+      style={{ flex: 1, backgroundColor: colors.bg }}
+      contentContainerStyle={pad}
+      // iOS: inset for the keyboard so inputs and the buttons under them can still be reached.
+      automaticallyAdjustKeyboardInsets
+      keyboardShouldPersistTaps="handled"
+      {...rest}
+    >
       {children}
     </ScrollView>
   );
